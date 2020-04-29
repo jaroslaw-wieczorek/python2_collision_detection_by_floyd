@@ -3,10 +3,19 @@ import hashlib
 # Floyd's algorithm (https://en.wikipedia.org/wiki/Cycle_detection)
 # We want to find collisions between two strings that begin with this prefix.
 
-my_prefix = "4284825"
+my_prefix = '\x41\x61\x99'
 
 # Get the first x bytes of the double md5 hash value
-def hash_function(message, x=14, prefix="4284825", debug=False):
+def hash_function(message, x=14, prefix='\x41\x61\x99', debug=False):
+  temp_hash = hashlib.md5(hashlib.md5(prefix + message).digest()).digest()
+
+  if debug is True:
+    print(message, x, prefix, temp_hash)
+
+  return temp_hash[:x]
+
+
+def hash_function2(message, x=14, prefix='\x41\x61\x99', debug=False):
   temp_hash = hashlib.md5(hashlib.md5(prefix + message).digest()).hexdigest()
 
   if debug is True:
@@ -49,28 +58,38 @@ def floyd(x, initial):
     hare = hash_function(hare, x, my_prefix)
 
   # Save results to the file
-  save_results(m0, m1, hash_function(m0, x, my_prefix))
+  save_results(m0, m1, hash_function(m0, x, my_prefix), hash_function2(m0, x*2, my_prefix))
 
 
-def save_results(m0, m1, hash):
+def save_results(m0, m1, hash1, hash2):
   """Save results to file."""
 
-  with open("moja_kolizja.txt", "w") as file:
+  with open("message0.bin", "wb") as file:
     # Save first message:
     file.write(my_prefix + m0)
-    file.write("\n")
 
+  with open("message1.bin", "wb") as file:
     # Save second message:
     file.write(my_prefix + m1)
-    file.write("\n")
 
-    # Save hash
-    file.write(hash)
-    file.write("\n")
+  with open("hash_1.bin", "wb") as file:
+    # Save bianry hash of messages:
+    file.write(hash1)
+
+  with open("hash_2.txt", "w") as file:
+    # Save of messages:
+    file.write("Message 1:\n")
+    file.write(my_prefix + m0)
+
+    file.write("\n\nMessage 2:\n")
+    file.write(my_prefix + m1)
+
+    file.write("\n\nHash:\n")
+    file.write(hash2)
 
 
 # Execute floyd funtion with initial value
-floyd(x=14, initial="123hsdshd9fh933")
+floyd(x=7, initial="123hsdshd9fh933")
 
 
 """
